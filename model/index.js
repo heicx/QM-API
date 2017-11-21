@@ -3,18 +3,19 @@ var orm = require("orm");
 var connection = null;
 
 var setup = function(db, cb) {
-    require("./user")(orm, db);
-    require("./contractInfo")(orm, db);
-    require("./contractInvoice")(orm, db);
-    require("./contractPayment")(orm, db);
-    require("./firstParty")(orm, db);
-    require("./secondParty")(orm, db);
-    require("./contractType")(orm, db);
-    require("./contractBank")(orm, db);
-    require("./region")(orm, db);
-    require("./area")(orm, db);
-    require("./regionArea")(orm, db);
-    require("./deposit")(orm, db);
+    require("./admin/user")(orm, db);
+    // require("./user")(orm, db);
+    // require("./contractInfo")(orm, db);
+    // require("./contractInvoice")(orm, db);
+    // require("./contractPayment")(orm, db);
+    // require("./firstParty")(orm, db);
+    // require("./secondParty")(orm, db);
+    // require("./contractType")(orm, db);
+    // require("./contractBank")(orm, db);
+    // require("./region")(orm, db);
+    // require("./area")(orm, db);
+    // require("./regionArea")(orm, db);
+    // require("./deposit")(orm, db);
 
     return cb(null, db);
 }
