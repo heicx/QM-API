@@ -41,7 +41,7 @@ const addUser = async (req, res) => {
 
     res.json({status: true, data: await userModel.addUser(params)});
   }catch(errMsg) {
-    res.json({status: false, message: errMsg});
+    res.json({status: false, errMsg: errMsg});
   }
 }
 
@@ -65,7 +65,7 @@ const modifyUserPass = async (req, res) => {
 
     res.json({status: true, data: await userModel.modifyUserPass(params)});
   }catch(errMsg) {
-    res.json({status: false, message: errMsg});
+    res.json({status: false, errMsg: errMsg});
   }
 }
 

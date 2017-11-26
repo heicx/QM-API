@@ -8,11 +8,20 @@ const router = express.Router();
  * @param next
  */
 const isLogin = function(req, res, next) {
-  console.log(req.cookies.sessionid)
-  if(!req.session || !req.session.adminUser) {
-    res.json({status: false, errMsg: "未登录"});
+  let params = req.query;
+
+  if(params.async) {
+    if(!req.session || !req.session.adminUser) {
+      res.json({status: false, errMsg: "未登录"});
+    }else {
+      res.json({status: true, data: req.session.adminUser});
+    }
   }else {
-    next();
+    if(!req.session || !req.session.adminUser) {
+      res.json({status: false, errMsg: "未登录"});
+    }else {
+      next();
+    }
   }
 }
 
@@ -30,10 +39,16 @@ const userLogin = function(req, res) {
 
   userModel.getUserByParams(params).then(user => {
     if(user.length > 0) {
-      req.session.adminUser = JSON.stringify(user[0]);
-      res.json({status: true, data: user[0]});
+      req.session.adminUser = {
+        name: user[0]['name'],
+        roleId: user[0]['role_id'],
+        roleName: user[0]['role_id'] == 1 ? '超级管理员': '管理员',
+        status: user[0]['status'] == 1,
+        createTime: user[0]['create_time']
+      };
+      res.json({status: true, data: req.session.adminUser});
     }else {
-      res.json({status: false, errMsg: "未登录"});
+      res.json({status: false, errMsg: "用户名密码有误"});
     }
   }).catch(errMsg => {
     res.json({status: false, errMsg: "未登录"});
@@ -46,6 +61,7 @@ const userLogout = function(req, res) {
 }
 
 router.post("/login", userLogin);
+router.get('/isLogin', isLogin);
 router.get("/logout", userLogout);
 
 exports.islogin = isLogin;

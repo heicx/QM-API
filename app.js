@@ -37,12 +37,15 @@ app.use(session({
 	name: "sessionid"
 }));
 app.use(function(req, res, next) {
+  res.header('Access-Control-Allow-Credentials', true);
+  res.header("Access-Control-Allow-Origin", "http://web.tcka.cn");
+  res.header('Access-Control-Allow-Headers', 'x-requested-with, Content-Type');
+
   models(function(err, db) {
     if(err) return next(err);
     req.models = db.models;
 
     req.db = db;
-
     return next();
   });
 });
