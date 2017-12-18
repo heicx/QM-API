@@ -51,7 +51,7 @@ module.exports = function(orm, db) {
       arrArgs = arr;
     });
 
-    sql = "select id, name, role_id, DATE_FORMAT(create_time, '%Y-%m-%d') as create_time from admin_user " + strCondition;
+    sql = "select id, name as userName, role_id as roleId, status, DATE_FORMAT(create_time, '%Y-%m-%d') as createTime from admin_user " + strCondition;
 
     return new Promise((resolve, reject) => {
       db.driver.execQuery(sql, arrArgs, function(err, users) {
@@ -91,7 +91,13 @@ module.exports = function(orm, db) {
           user.create_time = moment(user.create_time).format("L");
           user.update_time = moment(user.update_time).format("L");
   
-          resolve(user);
+          resolve({
+            name: user['name'],
+            roleId: user['role_id'],
+            roleName: user['role_id'] == 1 ? '超级管理员': '管理员',
+            status: user['status'] == 1,
+            createTime: user['create_time']
+          });
         }else
           reject("用户添加失败");
       });

@@ -28,7 +28,11 @@ app.disable('x-powered-by');
 app.use(logger("dev"));
 app.use(compression());
 app.use(cookieParser());
-app.use(bodyParser());
+// app.use(bodyParser());
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({
+  extended: true
+}));
 app.use(session({
   store: new RedisStore(options),
   secret: 'qmy and heicx_sudo',
@@ -55,6 +59,8 @@ app.use(function(req, res, next) {
  */
 const adminLogin = require("./routes/admin/login");
 const adminUser = require("./routes/admin/user");
+const adminOrder = require("./routes/admin/order");
+
 // var contract = require("./routes/contract");
 // var invoice = require("./routes/invoice");
 // var firstParty = require("./routes/firstParty");
@@ -68,6 +74,7 @@ const adminUser = require("./routes/admin/user");
 
 app.use("/qmy-admin", adminLogin.routes);
 app.use("/qmy-admin/user", adminUser);
+app.use("/qmy-admin/order", adminOrder);
 // app.use("/contract", contract);
 // app.use("/invoice", invoice);
 // app.use("/dictionary/firstParty", firstParty);
