@@ -4,6 +4,7 @@ var connection = null;
 
 var setup = function(db, cb) {
     require("./admin/user")(orm, db);
+    require("./mall/user")(orm, db);
     // require("./user")(orm, db);
     // require("./contractInfo")(orm, db);
     // require("./contractInvoice")(orm, db);
