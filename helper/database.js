@@ -7,6 +7,7 @@ var deferred = when.defer();
 db.on("connect", function (err, db) {
     if (err) console.log(err);
 
+    
     deferred.resolve(db);
 });
 

@@ -16,7 +16,7 @@ module.exports = function(orm, db) {
    * 用户查重
    * @param params
    */
-  User.findUserIsExist = async function (params) {
+  User.findUserIsExist = function (params) {
     return new Promise((resolve, reject) => {
       User.find({name: params.name}, (err, user) => {
         if(!err) {

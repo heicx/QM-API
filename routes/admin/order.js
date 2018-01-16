@@ -6,8 +6,20 @@ const login = require("./login");
 
 let orderModel;
 
+const searchOrderList = (req, res) => {
+  // orderModel = orderModel || req.models.admin_user;
+
+  // let params = { role_id: '1' };
+
+  // userModel.getUser(params).then(users => {
+  //   if(users) res.json({status: true, data: users});
+  // }).catch(errMsg => {
+  //   res.json({status: false, errMsg: errMsg});
+  // });
+}
+
 /**
- * 获取用户
+ * 订单导出
  * @param req
  * @param res
  */
@@ -75,7 +87,6 @@ const exportOrderList = (req, res) => {
   fs.writeFile(`${__dirname}/abc.xlsx`, buffer, err => {
     if(!err) {
       res.download(`${__dirname}/abc.xlsx`);
-      // res.json({status: true});
     }else {
       res.json({status: false, errMsg: '下载失败'})
     }
@@ -85,4 +96,6 @@ const exportOrderList = (req, res) => {
 router.use(login.islogin);
 
 router.get("/export", exportOrderList);
+router.get("/search", searchOrderList);
+
 module.exports = router;

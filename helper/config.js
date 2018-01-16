@@ -1,9 +1,10 @@
 module.exports = {
     "database": {
         "protocol": "mysql",
-        "host": "127.0.0.1",
+        "host": "119.23.220.108",
         "user": "root",
-        "password": "qwer1234",
-        "database": "contract"
+        "password": "xxxx",
+        "database": "qmy",
+        "query": {pool: true}
     }
 };

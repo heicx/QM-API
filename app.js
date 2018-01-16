@@ -13,15 +13,15 @@ var port = process.env.PORT || 3000;
 var app = express();
 var models = require('./model/index');
 
-var options = {
+const options = {
   host: "127.0.0.1",
   port: 6379,
   ttl: 10800
 }
+const client = redis.createClient();
 
-client = redis.createClient();
 client.on("error", function(err) {
-  console.log("Error" + err);
+  console.log("Redis Error" + err);
 });
 
 app.disable('x-powered-by');
@@ -41,14 +41,19 @@ app.use(session({
 }));
 app.use(function(req, res, next) {
   res.header('Access-Control-Allow-Credentials', true);
-  res.header("Access-Control-Allow-Origin", "http://web.tcka.cn");
+  res.header("Access-Control-Allow-Origin", req.headers.origin);
+  res.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
   res.header('Access-Control-Allow-Headers', 'x-requested-with, Content-Type');
 
   models(function(err, db) {
     if(err) return next(err);
-    req.models = db.models;
 
+    req.models = db.models;
     req.db = db;
+    req.redisClient = client;
+
+    console.log(db.settings.get('connection.reconnect'));
+    
     return next();
   });
 });
@@ -66,9 +71,11 @@ app.use("/qmy-admin/order", adminOrder);
 
 const mallLogin = require("./routes/mall/login");
 const mallUser = require("./routes/mall/user");
+const checkout = require("./routes/mall/checkout");
 
 app.use("/mall", mallLogin.routes);
-app.use("/mall/user", adminUser);
+app.use("/mall/user", mallUser);
+app.use("/mall/checkout", checkout);
 
 app.get("*", function(req, res) {
     res.status(404).end("404");

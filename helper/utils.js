@@ -1,29 +1,79 @@
-var http = require("http");
-var extend = require("extend");
-var _ = require("underscore");
+let http = require("http");
+let https = require('https');
+let extend = require("extend");
+let _ = require("underscore");
+let md5 = require("md5");
 
-var ex_options = {
-	hostname: "api.new.ssiautos.cn", 
-	port: 81,
+let ex_options = {
 	method: "POST",
-    path: "",
-    headers: {
-        "Content-Type": "application/x-www-form-urlencoded"
-    }
+  headers: {
+      "Content-Type": "application/x-www-form-urlencoded"
+  }
 }
 
-exports.sendRequest = function (data, options, callback) {
+exports.strMD5 = (str, len = 16) => {
+  let strTmp = '';
+
+  if(typeof str === 'string') {
+    strTmp = md5(str);
+    len = strTmp.length > len ? len : strTmp.length;
+
+    return strTmp.substring(0, len).toUpperCase();
+  }else {
+    return strTmp;
+  }
+}
+
+exports.randomNums = (count) => {
+  let strRet = '',
+      nums = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+
+  for(let i=0; i < count; i++) {
+    strRet += Math.floor(Math.random() * 10);
+  }
+
+  return strRet;
+}
+
+exports.objKeySort = (obj) => {
+  let newObj = {};
+  let keys = Object.keys(obj);
+
+  if(keys.length > 0) {
+    keys = keys.sort();
+
+    for(let i = 0; i < keys.length; ++i) {
+      newObj[keys[i]] = obj[keys[i]];
+    }
+  }
+  
+  return newObj;
+}
+
+exports.sendHttpRequest = function (data, options, callback) {
 	var req;
 
 	options = extend(true, ex_options, options);
 	req = http.request(options, callback);
 
-    req.on("error", function(e) {
-        req.write("problem with request: " + e.message).end();
-    });
+  req.on("error", function(e) {
+    callback(null, e.message);
+  });
 
-    req.write(data);
-	req.end();
+  req.end(data);
+}
+
+exports.sendHttpsRequest = function (data, options, callback) {
+	var req;
+
+	options = extend(true, ex_options, options);
+	req = https.request(options, callback);
+
+  req.on("error", function(e) {
+    callback(null, e.message);
+  });
+
+  req.end(data);
 }
 
 exports.arrToJSON = function(arr) {

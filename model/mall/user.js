@@ -4,7 +4,6 @@ var utils = require("../../helper/utils");
 module.exports = function(orm, db) {
 	var User = db.define("mall_user", {
 		id: {type: "serial", key: true},
-		name: String,
 		password: String,
     nick_name: String,
     email: String,
@@ -17,7 +16,7 @@ module.exports = function(orm, db) {
    * 用户查重
    * @param params
    */
-  User.findUserIsExist = async function (params) {
+  User.findUserIsExist = function (params) {
     return new Promise((resolve, reject) => {
       User.find({mobile: params.mobile}, (err, user) => {
         if(!err) {
@@ -54,7 +53,7 @@ module.exports = function(orm, db) {
    * @param params
    * @returns {promise}
    */
-  User.addUser = function(params) {
+  User.registerUser = function(params) {
     return new Promise((resolve, reject) => {
       User.create(params, function(err, user) {
         if(user) {
@@ -62,7 +61,6 @@ module.exports = function(orm, db) {
           user.update_time = moment(user.update_time).format("L");
   
           resolve({
-            name: user['name'],
             nickName: user['nick_name'],
             email: user['email'],
             mobile: user['mobile'],
