@@ -4,6 +4,8 @@ var path = require("path");
 var redis = require("redis");
 var cookieParser = require('cookie-parser');
 var bodyParser = require("body-parser");
+require("body-parser-xml")(bodyParser);
+// xmlparser = require('express-xml-bodyparser');
 var favicon = require("serve-favicon");
 var session = require('express-session');
 var RedisStore = require("connect-redis")(session);
@@ -39,6 +41,21 @@ app.use(session({
 	saveUninitialized: true,
 	name: "sessionid"
 }));
+// app.use(xmlparser());
+app.use(bodyParser.xml({
+  limit: "2MB",
+  xmlParseOptions: {
+    normalize: true,
+    normalizeTags: true,
+    explicitArray: false
+  },
+  verify: function(req, res, buf, encoding) {
+    if(buf && buf.length) {
+      req.rawBody = buf.toString(encoding || "utf8");
+    }
+  }
+}));
+
 app.use(function(req, res, next) {
   res.header('Access-Control-Allow-Credentials', true);
   res.header("Access-Control-Allow-Origin", req.headers.origin);
@@ -71,11 +88,17 @@ app.use("/qmy-admin/order", adminOrder);
 
 const mallLogin = require("./routes/mall/login");
 const mallUser = require("./routes/mall/user");
-const checkout = require("./routes/mall/checkout");
+const mallArea = require("./routes/mall/area");
+const mallAddress = require("./routes/mall/address");
+const payment = require("./routes/mall/payment");
+const order = require("./routes/mall/order");
 
 app.use("/mall", mallLogin.routes);
 app.use("/mall/user", mallUser);
-app.use("/mall/checkout", checkout);
+app.use("/mall/area", mallArea);
+app.use("/mall/address", mallAddress);
+app.use("/mall/payment", payment);
+app.use("/mall/order", order);
 
 app.get("*", function(req, res) {
     res.status(404).end("404");

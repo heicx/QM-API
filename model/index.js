@@ -5,18 +5,9 @@ var connection = null;
 var setup = function(db, cb) {
     require("./admin/user")(orm, db);
     require("./mall/user")(orm, db);
-    // require("./user")(orm, db);
-    // require("./contractInfo")(orm, db);
-    // require("./contractInvoice")(orm, db);
-    // require("./contractPayment")(orm, db);
-    // require("./firstParty")(orm, db);
-    // require("./secondParty")(orm, db);
-    // require("./contractType")(orm, db);
-    // require("./contractBank")(orm, db);
-    // require("./region")(orm, db);
-    // require("./area")(orm, db);
-    // require("./regionArea")(orm, db);
-    // require("./deposit")(orm, db);
+    require("./mall/area")(orm, db);
+    require("./mall/address")(orm, db);
+    require("./mall/order")(orm, db);
 
     return cb(null, db);
 }

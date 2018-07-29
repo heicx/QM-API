@@ -1,21 +1,46 @@
 const express = require("express");
 const router = express.Router();
 const xlsx = require('node-xlsx');
+const multer = require('multer');
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, `${__dirname}/../../uploadFiles`)
+  },
+  filename: function (req, file, cb) {
+    cb(null, 'file.xlsx')
+  }
+});
+const upload = multer({ storage: storage });
 const fs = require('fs');
 const login = require("./login");
+const moment = require('moment');
 
 let orderModel;
 
-const searchOrderList = (req, res) => {
-  // orderModel = orderModel || req.models.admin_user;
+/**
+ * 订单查询
+ * @param {*} req 
+ * @param {*} res 
+ */
+const searchOrderList = async (req, res) => {
+  orderModel = orderModel || req.models.mall_order;
 
-  // let params = { role_id: '1' };
+  let { orderId, beginTime, endTime, sendType, payType } = req.query;
+  let oParams = {
+    orderId: orderId,
+    beginTime: beginTime,
+    endTime: endTime,
+    orderStatus: sendType,
+    payStatus: payType
+  };
 
-  // userModel.getUser(params).then(users => {
-  //   if(users) res.json({status: true, data: users});
-  // }).catch(errMsg => {
-  //   res.json({status: false, errMsg: errMsg});
-  // });
+  try {
+    if(req.session.adminUser) {
+      res.json({status: true, data: await orderModel.checkUserOrderForAdmin(oParams)});
+    }
+  }catch(errMsg) {
+    res.json({status: false, errMsg: errMsg});
+  }
 }
 
 /**
@@ -23,79 +48,131 @@ const searchOrderList = (req, res) => {
  * @param req
  * @param res
  */
-const exportOrderList = (req, res) => {
-  // userModel = userModel || req.models.admin_user;
+const exportOrderList = async (req, res) => {
+  orderModel = orderModel || req.models.mall_order;
+  
+  const header = [];
+  const colsWidth = [];
+  let { orderId, beginTime, endTime, sendType, payType } = req.query;
+  let oParams = {
+    orderId: orderId,
+    beginTime: beginTime,
+    endTime: endTime,
+    orderStatus: sendType,
+    payStatus: payType
+  };
 
-  // let params = { role_id: '1' };
-
-  // userModel.getUser(params).then(users => {
-  //   if(users) res.json({status: true, data: users});
-  // }).catch(errMsg => {
-  //   res.json({status: false, errMsg: errMsg});
-  // });
-
-  // const data = [[1, 2, 3], [true, false, null, 'sheetjs'], ['foo', 'bar', new Date('2014-02-19T14:30Z'), '0.3'], ['baz', null, 'qux']];
-  // const range = ; // A1:A4
-  // {
-  //   s: {c: 0, r:0 },
-  //   e: {c:0, r:3}
-  // },
-
-  const header = [
-    // 第一行
-    {
-      s: {c: 0, r: 0 },
-      e: {c: 0, r: 2}
-    },
-    {
-      s: {c: 1, r: 0},
-      e: {c: 5, r: 0}
-    },
-    {
-      s: {c: 6, r: 0 },
-      e: {c: 47, r: 0}
-    }
-  ]
-
-  // 第二行
-  for(let i = 1; i <= 47; ++i) {
+  // 第一行
+  for(let i = 0; i < 26; ++i) {
     header.push({
-      s: {c: i, r: 1},
-      e: {c: i, r: 2}
+      s: {c: i, r: 0},
+      e: {c: i, r: 0}
     });
+
+    if (i == 0 || i == 5) {
+      colsWidth.push({wpx: 240});
+    }else {
+      colsWidth.push({wpx: 160});
+    }
   }
 
   const data = [
-    ['用户订单号', '收件方信息', null, null, null, null, '运单其它信息'],
-    [null, '收件公司', '联系人', '联系电话', '手机号码', '收件详细地址', '付款方式', '第三方付月结卡号', '托寄物内容', '托寄物数量', '件数', 
-     '实际重量（KG）', '计费重量（KG）', '业务类型', '是否代收货款', '代收货款金额', '代收卡号', '是否保价', '保价金额', '标准化包装（元）',
-     '其它费用（元）', '个性化包装（元）', '是否自取', '是否签回单', '是否定时派送', '派送日期', '派送时段', '是否电子验收', '拍照类型',
-     '是否保单配送', '是否拍照验证', '是否保鲜服务', '是否易碎件', '是否票据专送', '是否超长超重服务', '超长超重服务费', '收件员', '寄方签名',
-     '寄件日期', '签收短信通知(MSG)', '派件短信通知(SMS)', '寄方客户备注', '长(cm)', '宽(cm)', '高(cm)', '扩展字段1', '扩展字段2', '扩展字段3']
+    ['用户订单号', '收件公司', '收件人', '收件电话', '收件手机', '收件详细地址', '托寄物内容', '托寄物数量', '包裹重量', '寄方备注', '运费付款方式', '业务类型', '件数', '代收金额', '保价金额', '标准化包装', '个性化包装', '签回单', '自取件', '易碎件', '电子验收', '超长超重服务费', '是否定时派送', '派送日期', '派送时段', '扩展字段']
   ];
 
-  const colsWidth = [{wpx: 170}, {wpx: 100}, {wpx: 100}, {wpx: 100}, {wpx: 110}, {wpx: 750},
-    {wpx: 100}, {wpx: 100}, {wpx: 270}, {wpx: 100}, {wpx: 100}, {wpx: 100}, {wpx: 100}, 
-    {wpx: 100}, {wpx: 100}, {wpx: 100}, {wpx: 100}, {wpx: 100}, {wpx: 100}, {wpx: 100}, {wpx: 100}, 
-    {wpx: 100}, {wpx: 100}, {wpx: 100}, {wpx: 100}, {wpx: 50}, {wpx: 100}, {wpx: 100}, {wpx: 100}, 
-    {wpx: 100}, {wpx: 100}, {wpx: 100}, {wpx: 160}, {wpx: 100}, {wpx: 100}, {wpx: 100}, {wpx: 100},
-    {wpx: 100}, {wpx: 100}, {wpx: 100}, {wpx: 100}, {wpx: 100}, {wpx: 100}, {wpx: 100}, {wpx: 100}, 
-    {wpx: 100}, {wpx: 100}, {wpx: 100}];
-  const option = {'!merges': header, '!cols': colsWidth};
-  var buffer = xlsx.build([{name: "qmy-data", data: data}], option);
+  try {
+    if(req.session.adminUser) {
+      // res.json({status: true, data: });
+      let arrList = await orderModel.checkUserOrderForAdmin(oParams);
+      let arrTmp = [];
 
-  fs.writeFile(`${__dirname}/abc.xlsx`, buffer, err => {
-    if(!err) {
-      res.download(`${__dirname}/abc.xlsx`);
+      for (let item of arrList) {
+        data.push([
+          item.id, '', item.userName, item.mobile, item.mobile, item.address, 
+          '平衡车', item.goodsCount, '', '', '寄付月结', '顺丰次日', item.goodsCount,
+          '', '', '', '', '否', '否', '是', '否', '否', '否', '', '', ''
+        ]);
+      }
+      
+      const option = {'!merges': header, '!cols': colsWidth, 'cellStyles': true};
+      var buffer = xlsx.build([{name: "qmy-data", data: data}], option);
+
+      fs.writeFile(`${__dirname}/../../download/file.xlsx`, buffer, err => {
+
+        console.log('err', err)
+        if(!err) {
+          let timestamp = moment().format("YY-M-DD hh:mm:ss");
+          res.download(`${__dirname}/../../download/file.xlsx`, `qmy-${timestamp}.xlsx`);
+        }else {
+          res.json({status: false, errMsg: '下载失败'})
+        }
+      });
     }else {
-      res.json({status: false, errMsg: '下载失败'})
+      res.json({status: false});
     }
-  });
+  }catch(errMsg) {
+    res.json({status: false, errMsg: errMsg});
+  }
 }
 
-router.use(login.islogin);
+/**
+ * 订单导入
+ * @param req
+ * @param res
+ */
+const importOrderList = async (req, res) => {
+  orderModel = orderModel || req.models.mall_order;
+  
+  try {
+    let arrData = xlsx.parse(`${__dirname}/../../uploadFiles/file.xlsx`);
+    let oOrder = null;
+    let arrOrderIds = [];
+
+    if (arrData && arrData.length > 0) {
+      let tmp = arrData[0];
+
+      if(tmp && tmp.data.length > 0) {
+        tmp.data.splice(0, 1);
+
+        for (let line of tmp.data) {
+          if (!oOrder)
+            oOrder = {}
+
+          if (line[0]) {
+            oOrder[line[0]] = {
+              id: line[0],
+              express_id: line[1],
+              express_name: '顺丰快递',
+              order_status: 1
+            }
+
+            arrOrderIds.push(line[0]);
+          }
+        }
+      }
+
+      try {
+        if(req.session.adminUser && oOrder) {
+          res.json({status: true, data: await orderModel.updateOrder(arrOrderIds, oOrder)});
+          // res.json({status: true})
+        } else {
+          res.json({status: false, errMsg: '数据导入失败'});
+        }
+      }catch(errMsg) {
+        res.json({status: false, errMsg: errMsg});
+      }
+    }else {
+      res.json({status: false, errMsg: '数据导入失败'});
+    }
+  } catch(err) {
+    console.log('error------->', err);
+  }
+}
+
+// router.use(login.islogin);
 
 router.get("/export", exportOrderList);
 router.get("/search", searchOrderList);
+router.post("/import", upload.single('orderFile'), importOrderList);
 
 module.exports = router;

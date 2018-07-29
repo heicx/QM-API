@@ -1,7 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const md5 = require('md5');
-const PWD_KEY = 'xxx';
+const PWD_KEY = 'qmy&%9088*@';
 
 /**
  * 中间件 - 校验用户登陆
@@ -16,6 +16,7 @@ const isLogin = function(req, res, next) {
     if(!req.session || !req.session.mallUser) {
       res.json({status: false, errMsg: "未登录"});
     }else {
+      console.log(req.session.mallUser)
       res.json({status: true, data: req.session.mallUser});
     }
   }else {
@@ -42,6 +43,7 @@ const userLogin = function(req, res) {
   userModel.getUserByParams(params).then(user => {
     if(user.length > 0) {
       req.session.mallUser = {
+        userId: user[0]['id'],
         nickName: user[0]['nick_name'],
         email: user[0]['email'],
         mobile: user[0]['mobile'],

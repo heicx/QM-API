@@ -123,7 +123,6 @@ exports.ormFilter = function(origin, basic, cb) {
     var prefix, i, j, arrCondition = [], arrArgs = [], strL, strR;
     var keywords = [">", "<", "<>", "in", "not in", "like"];
 
-
     for (i in basic) {
         for (j in origin) {
             if (typeof basic === "object" && Object.prototype.toString.call(basic).toLowerCase() === "[object object]" && !basic.length) {
@@ -177,6 +176,66 @@ exports.paramsFilter = function(arrBasic, params) {
     }
 
     return outputParams;
+}
+
+/**
+ * 指定表内字段按条件批量更新
+ * @param {Object} oFields 
+ * @param {Object} oParams 
+ * 
+ * 例子：
+ * var oFields = {
+ *  arrCondition: ['val1', 'val2'],
+ *  tableName: 'mall_order',
+ *  caseName: 'id',
+ *  setFieldsName: ['express_id', 'express_name', 'order_status']
+ * }
+ * 
+ * oParams = {
+ *  val1: {
+ *    id: 'eo10001',
+ *    epress_id: 'xxxxx001',
+ *    express_name: 'SF',
+ *    order_status: 1
+ *  }
+ * }
+ */
+exports.batchUpdateFilter = function(oFields, oParams, callback) {
+  let sql = '';
+
+  if (
+    oFields 
+    && oFields.arrCondition
+    && oFields.tableName 
+    && oFields.setFieldsName
+    && oFields.caseName
+    && oParams
+  ) {
+    sql = `UPDATE ${oFields.tableName} SET `;
+
+    for (let key of oFields.setFieldsName) {
+
+      sql += `${key} = CASE ${oFields.caseName} `;
+
+      for (let val of oFields.arrCondition) {
+        sql += `WHEN '${val}' THEN '${oParams[val][key]}' `
+      }
+
+      sql += 'END,'
+    }
+
+    sql = sql.substring(0, sql.length -1);
+
+    sql += ` WHERE ${oFields.caseName} IN (`
+
+    for (let id of oFields.arrCondition) {
+      sql += `'${id}',`
+    }
+
+    sql = sql.substring(0, sql.length -1) + ')';
+  }
+
+  callback(sql);
 }
 
 exports.paginationMath = function(pageNo, count) {

@@ -1,5 +1,4 @@
 var moment = require("moment");
-var utils = require("../../helper/utils");
 
 module.exports = function(orm, db) {
 	var User = db.define("mall_user", {
@@ -8,8 +7,8 @@ module.exports = function(orm, db) {
     nick_name: String,
     email: String,
 		mobile: String,
-		create_time: {type: "date", defaultValue: new Date()},
-		update_time: {type: "date", defaultValue: new Date()}
+		create_time: {type: "date", defaultValue: moment().format("YYYY-MM-DD HH:mm:ss")},
+		update_time: {type: "date", defaultValue: moment().format("YYYY-MM-DD HH:mm:ss")}
 	});
 
   /**
@@ -61,6 +60,7 @@ module.exports = function(orm, db) {
           user.update_time = moment(user.update_time).format("L");
   
           resolve({
+            id: user['id'],
             nickName: user['nick_name'],
             email: user['email'],
             mobile: user['mobile'],

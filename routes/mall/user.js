@@ -3,9 +3,9 @@ const md5 = require('md5');
 const router = express.Router();
 const login = require("./login");
 const SMSClient = require('@alicloud/sms-sdk');
-const PWD_KEY = 'xxxx'
-const accessKeyId = 'xxxx'
-const secretAccessKey = 'xxxx'
+const PWD_KEY = 'qmy&%9088*@'
+const accessKeyId = 'LTAINQq3fE5PqGyl'
+const secretAccessKey = 'ACu93loFQk6NEjq3V9Q83kYqmVA46s'
 
 let userModel;
 let smsClient = new SMSClient({accessKeyId, secretAccessKey});
@@ -34,12 +34,14 @@ const registerUser = (req, res) => {
 
           const user = await userModel.registerUser(params);
           req.session.mallUser = {
+            userId: user.id,
             nickName: user.nickName,
             email: user.email,
             mobile: user.mobile,
             createTime: user.createTime,
             updateTime: user.updateTime
           };
+
           res.json({status: true, data: user});
         }catch(errMsg) {
           res.json({status: false, errMsg: errMsg});
@@ -51,14 +53,13 @@ const registerUser = (req, res) => {
   })
 }
 
-
 /**
  * 修改密码
  * @param req
  * @param res
  */
 const modifyUserPass = async (req, res) => {
-  userModel = userModel || req.models.admin_user;
+  userModel = userModel || req.models.mall_user;
 
   let params = {
     mobile: req.body.mobile,
@@ -88,7 +89,7 @@ const sendCaptcha = async (req, res) => {
     req.redisClient.get(req.body.mobile, (err, cache) => {
       if(!cache) {
         captcha = generateCaptcha(6);
-        req.redisClient.set(req.body.mobile, captcha, 'EX', 1200);
+        req.redisClient.set(req.body.mobile, captcha, 'EX', 300);
       }else {
         captcha = cache;
       }
@@ -113,7 +114,10 @@ const sendCaptcha = async (req, res) => {
   }
 }
 
-// 生成验证码
+/**
+ * 生成验证码
+ * @param {*} count 验证码位数
+ */
 const generateCaptcha = (count) => {
   let captcha = [];
   
@@ -124,8 +128,24 @@ const generateCaptcha = (count) => {
   return captcha.join('');
 }
 
-router.post("/register", registerUser);
-router.post("/modify", login.islogin, modifyUserPass);
+/**
+ * 用户信息
+ * @param {*} req 
+ * @param {*} res 
+ */
+const getUserInfo = (req, res) => {
+  userModel = userModel || req.models.mall_user;
+
+  if(req.session.mallUser) {
+    res.json({status: true, data: req.session.mallUser});
+  }else {
+    res.json({status: false, errMsg: '用户未登录'});
+  }
+}
+
 router.post("/sendCaptcha", sendCaptcha);
+router.post("/register", registerUser);
+router.get("/info", getUserInfo);
+// router.post("/modify", login.islogin, modifyUserPass);
 
 module.exports = router;
